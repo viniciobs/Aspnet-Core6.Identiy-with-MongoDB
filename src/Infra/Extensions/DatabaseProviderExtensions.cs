@@ -6,9 +6,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Infra.Extensions
 {
+	[ExcludeFromCodeCoverage]
 	public static class DatabaseProviderExtensions
 	{
 		public static IdentityBuilder AddIdentityDatabase(

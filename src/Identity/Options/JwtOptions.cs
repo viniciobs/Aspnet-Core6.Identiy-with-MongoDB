@@ -1,8 +1,10 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Identity.Options
 {
+	[ExcludeFromCodeCoverage]
 	public class JwtOptions
 	{
 		private string _secretKey;

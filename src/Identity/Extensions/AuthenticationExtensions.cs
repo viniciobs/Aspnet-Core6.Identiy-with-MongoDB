@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Identity.Extensions
 {
+	[ExcludeFromCodeCoverage]
 	public static class AuthenticationExtensions
 	{
 		public static IServiceCollection AddApiAuthentication(this IServiceCollection services, IConfiguration configuration)

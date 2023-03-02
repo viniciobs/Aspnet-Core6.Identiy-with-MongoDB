@@ -1,12 +1,13 @@
 ﻿using Api.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Api.Filters
 {
+	[ExcludeFromCodeCoverage]
 	public class ActionFilter : IActionFilter
 	{
-
 		public void OnActionExecuting(ActionExecutingContext context)
 		{
 			if (context.ModelState.IsValid is false)

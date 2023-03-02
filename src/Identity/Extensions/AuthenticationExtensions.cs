@@ -1,5 +1,5 @@
-﻿using Data.Entities;
-using Data.Extensions;
+﻿using Infra.Entities;
+using Infra.Extensions;
 using Identity.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;

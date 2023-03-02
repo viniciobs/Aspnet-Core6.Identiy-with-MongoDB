@@ -1,7 +1,7 @@
 ﻿using AspNetCore.Identity.MongoDbCore.Models;
 using MongoDbGenericRepository.Attributes;
 
-namespace Data.Entities
+namespace Infra.Entities
 {
 
 	[CollectionName("Users")]

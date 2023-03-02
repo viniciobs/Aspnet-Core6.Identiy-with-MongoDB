@@ -1,4 +1,4 @@
-﻿using Data.Entities;
+﻿using Infra.Entities;
 using Identity.Models;
 using Identity.Options;
 using Microsoft.AspNetCore.Identity;

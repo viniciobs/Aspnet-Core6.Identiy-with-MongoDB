@@ -24,7 +24,7 @@ namespace Api.Test.Controllers.v1
 		}
 
 		[Test, AutoData]
-		public async Task GivenSignin_WhenInvalidData_ShouldReturnNotFound(LoginRequest request)
+		public async Task GivenSignin_WhenInvalidData_ThenReturnNotFound(LoginRequest request)
 		{
 			// Arrange
 			var errors = _fixture.Create<string[]>();
@@ -43,7 +43,7 @@ namespace Api.Test.Controllers.v1
 		}
 
 		[Test, AutoData]
-		public async Task GivenSignin_WhenValidData_ShouldReturnSuccessOk(LoginRequest request)
+		public async Task GivenSignin_WhenValidData_ThenReturnSuccessOk(LoginRequest request)
 		{
 			// Arrange
 			var loginSuccessResponse = _fixture.Create<LoginResponse>();
@@ -58,6 +58,46 @@ namespace Api.Test.Controllers.v1
 			// Assert
 			result.Should().NotBeNull();
 			result.StatusCode.Should().Be(StatusCodes.Status200OK);
+			result.Value.As<LoginResponse>().Errors.Should().BeEmpty();
+			result.Value.As<LoginResponse>().ExpiresAt.Should().NotBeNull();
+			result.Value.As<LoginResponse>().AccessToken.Should().NotBeNull().And.NotBeEmpty();
+		}
+
+		[Test, AutoData]
+		public async Task GivenSignup_WhenUnableToRegister_ThenReturnUnprocessableEntity(RegisterRequest request)
+		{
+			// Arrange
+			var errors = _fixture.Create<string[]>();
+			var loginErrorResponse = _fixture.Create<LoginResponse>().WithErrors(errors);
+			_authenticationService
+				.Setup(x => x.SignUpAsync(request))
+				.ReturnsAsync(loginErrorResponse);
+			_sut = GetController();
+
+			// Act
+			var result = await _sut.SignUp(request) as ObjectResult;
+
+			// Assert
+			result.Should().NotBeNull();
+			result.StatusCode.Should().Be(StatusCodes.Status422UnprocessableEntity);
+		}
+
+		[Test, AutoData]
+		public async Task GivenSignup_WhenRegisterSuccessfully_ThenReturnCreated(RegisterRequest request)
+		{
+			// Arrange
+			var loginSuccessResponse = _fixture.Create<LoginResponse>();
+			_authenticationService
+				.Setup(x => x.SignUpAsync(request))
+				.ReturnsAsync(loginSuccessResponse);
+			_sut = GetController();
+
+			// Act
+			var result = await _sut.SignUp(request) as ObjectResult;
+
+			// Assert
+			result.Should().NotBeNull();
+			result.StatusCode.Should().Be(StatusCodes.Status201Created);
 			result.Value.As<LoginResponse>().Errors.Should().BeEmpty();
 			result.Value.As<LoginResponse>().ExpiresAt.Should().NotBeNull();
 			result.Value.As<LoginResponse>().AccessToken.Should().NotBeNull().And.NotBeEmpty();

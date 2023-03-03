@@ -1,4 +1,4 @@
-using Api.Extensions;
+using Ioc.Extensions;
 using Api.Filters;
 using Ioc;
 

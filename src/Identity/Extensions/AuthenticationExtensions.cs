@@ -1,6 +1,6 @@
 ﻿using Infra.Entities;
 using Infra.Extensions;
-using Identity.Options;
+using Identity.Configurations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -22,11 +22,11 @@ namespace Identity.Extensions
 				.AddRoleManager<RoleManager<Role>>()
 				.AddDefaultTokenProviders();
 
-			var jwtOptions = configuration
-						.GetSection(nameof(JwtOptions))
-						.Get<JwtOptions>();
+			var jwtConfiguration = configuration
+						.GetSection(nameof(JwtConfiguration))
+						.Get<JwtConfiguration>();
 
-			services.AddSingleton(jwtOptions);
+			services.AddSingleton(jwtConfiguration);
 
 			services
 				.Configure<IdentityOptions>(options =>
@@ -41,6 +41,8 @@ namespace Identity.Extensions
 					options.Lockout.MaxFailedAccessAttempts = 3;
 
 					options.User.RequireUniqueEmail = true;
+
+					options.SignIn.RequireConfirmedEmail = true;
 				})
 				.AddAuthentication(options =>
 				{
@@ -55,13 +57,13 @@ namespace Identity.Extensions
 					options.TokenValidationParameters = new TokenValidationParameters
 					{
 						ValidateIssuer = true,
-						ValidIssuer = jwtOptions.Issuer,
+						ValidIssuer = jwtConfiguration.Issuer,
 
 						ValidateAudience = true,
-						ValidAudience = jwtOptions.Audience,
+						ValidAudience = jwtConfiguration.Audience,
 
 						ValidateIssuerSigningKey = true,
-						IssuerSigningKey = jwtOptions.SecurityKey,
+						IssuerSigningKey = jwtConfiguration.SecurityKey,
 
 						RequireExpirationTime = true,
 						ValidateLifetime = true,

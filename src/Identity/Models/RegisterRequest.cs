@@ -3,8 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Identity.Models
 {
-	[ExcludeFromCodeCoverage]
-	public class RegisterRequest
+    [ExcludeFromCodeCoverage]
+	public record RegisterRequest
 	{
 		[Required, EmailAddress]
 		public string Email { get; init; }

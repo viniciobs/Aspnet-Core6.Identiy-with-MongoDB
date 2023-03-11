@@ -1,27 +1,55 @@
-﻿using Infra.Entities;
+﻿using Identity.Configurations;
 using Identity.Models;
-using Identity.Options;
+using Infra.Entities;
+using Infra.Services;
 using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Transactions;
 
 namespace Identity.Services.Implementations
 {
-	public class AuthenticationService : IAuthentication
+    public class AuthenticationService : IAuthentication
 	{
 		private readonly SignInManager<User> _signInManager;
 		private readonly UserManager<User> _userManager;
-		private readonly JwtOptions _jwtOptions;
+		private readonly JwtConfiguration _jwtOptions;
+		private readonly IMessageProducer _messageProducer;
 
 		public AuthenticationService(
 			SignInManager<User> signInManager,
 			UserManager<User> userManager,
-			JwtOptions jwtOptions) =>
-			(_signInManager, _userManager, _jwtOptions) = (signInManager, userManager, jwtOptions);
+			JwtConfiguration jwtOptions,
+			IMessageProducer messageProducer) =>
+			(_signInManager, _userManager, _jwtOptions, _messageProducer) =
+			(signInManager, userManager, jwtOptions, messageProducer);
 
-		public async Task<LoginResponse> SignInAsync(LoginRequest request)
+        public async Task<LoginResponse> ConfirmEmailAsync(EmailConfirmationRequest request)
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+
+            if (user is null)
+            {
+                return new LoginResponse().WithErrors("Email not found");
+            }
+
+			var result = await _userManager.ConfirmEmailAsync(user, request.Token);
+
+			if (result.Succeeded is false) 
+			{
+                return new LoginResponse()
+                    .WithErrors(result.Errors
+                        .Select(x => $"{x.Code}: {x.Description}")
+                        .ToArray());
+            }
+
+			return GenerateCredentialsAsync(user);
+        }
+
+        public async Task<LoginResponse> SignInAsync(LoginRequest request)
 		{
 			var user = await _userManager.FindByNameAsync(request.Username);
+
 			if (user is null)
 			{
 				return new LoginResponse().WithErrors("Username not found");
@@ -32,37 +60,61 @@ namespace Identity.Services.Implementations
 					request.Password,
 					lockoutOnFailure: true);
 
-			if (result.Succeeded is false)
+			if (result.Succeeded)
 			{
-				return new LoginResponse().WithErrors("Invalid credentials");
+				return GenerateCredentialsAsync(user);
 			}
 
-			return GenerateCredentialsAsync(user);
+			var isEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+
+			if (isEmailConfirmed is false) 
+			{
+                return new LoginResponse().WithErrors("Unable to login due pending e-mail confirmation");
+            }
+
+			return new LoginResponse().WithErrors("Invalid credentials");
 		}
 
-		public async Task<LoginResponse> SignUpAsync(RegisterRequest request)
+		public async Task<(bool IsSuccess, string[] Errors)> SignUpAsync(RegisterRequest request, CancellationToken cancellationToken)
 		{
 			var identityUser = new User
 			{
 				UserName = request.Username,
 				Email = request.Email,
-				EmailConfirmed = true,
-			};
+				EmailConfirmed = false,
+            };
 
 			var result = await _userManager.CreateAsync(identityUser, request.Password);
 
 			if (result.Succeeded is false)
 			{
-				return new LoginResponse()
-					.WithErrors(result.Errors
+				return (
+					IsSuccess: false,
+					Errors: result.Errors
 						.Select(x => $"{x.Code}: {x.Description}")
 						.ToArray());
 			}
 
-			await _userManager.SetLockoutEnabledAsync(identityUser, false);
 			var user = await _userManager.FindByEmailAsync(request.Email);
+			var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-			return GenerateCredentialsAsync(user);
+			var isConfirmationSent = await _messageProducer.SendMessageAsync(new
+			{
+				Email = user.Email,
+				ConfirmationToken = emailConfirmationToken
+			},
+			cancellationToken);
+
+			if (isConfirmationSent is false)
+			{
+				return (
+					IsSuccess: false,
+					Errors: new[] { "Unable to send e-mail confirmation. Try again." });
+			}
+
+            return (
+				IsSuccess: true,
+				Errors: Array.Empty<string>());
 		}
 
 		private LoginResponse GenerateCredentialsAsync(User user)

@@ -16,6 +16,8 @@ namespace Api.Filters
 					Errors = new[] { "Unexpected error" },
 					ExceptionMessage = context.Exception.Message
 				});
+
+			context.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
 		}
 	}
 }

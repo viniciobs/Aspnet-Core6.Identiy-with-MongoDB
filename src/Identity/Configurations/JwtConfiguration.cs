@@ -2,10 +2,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace Identity.Options
+namespace Identity.Configurations
 {
 	[ExcludeFromCodeCoverage]
-	public class JwtOptions
+	public class JwtConfiguration
 	{
 		private string _secretKey;
 		private SigningCredentials _signingCredentials;

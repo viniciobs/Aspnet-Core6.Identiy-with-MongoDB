@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 namespace Api.Test.Controllers.v1
 {
-	internal class AuthenticationControllerTest
+    internal class AuthenticationControllerTest
 	{
 		private readonly Fixture _fixture = new();
 		private AuthenticationController _sut;
@@ -35,11 +35,10 @@ namespace Api.Test.Controllers.v1
 			_sut = GetController();
 
 			// Act
-			var result = await _sut.SignIn(request) as ObjectResult;
+			var result = await _sut.SignIn(request);
 
 			// Assert
-			result.Should().NotBeNull();
-			result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+			result.Should().BeOfType<NotFoundObjectResult>();
 		}
 
 		[Test, AutoData]
@@ -53,54 +52,52 @@ namespace Api.Test.Controllers.v1
 			_sut = GetController();
 
 			// Act
-			var result = await _sut.SignIn(request) as ObjectResult;
+			var result = await _sut.SignIn(request);
 
 			// Assert
-			result.Should().NotBeNull();
-			result.StatusCode.Should().Be(StatusCodes.Status200OK);
-			result.Value.As<LoginResponse>().Errors.Should().BeEmpty();
-			result.Value.As<LoginResponse>().ExpiresAt.Should().NotBeNull();
-			result.Value.As<LoginResponse>().AccessToken.Should().NotBeNull().And.NotBeEmpty();
-		}
+			result.Should().BeOfType<OkObjectResult>();
+
+			var loginResponse = (LoginResponse)(result as ObjectResult).Value;
+
+            loginResponse.Errors.Should().BeEmpty();
+            loginResponse.ExpiresAt.Should().NotBeNull();
+            loginResponse.AccessToken.Should().NotBeNull().And.NotBeEmpty();
+        }
 
 		[Test, AutoData]
 		public async Task GivenSignup_WhenUnableToRegister_ThenReturnUnprocessableEntity(RegisterRequest request)
 		{
 			// Arrange
-			var errors = _fixture.Create<string[]>();
-			var loginErrorResponse = _fixture.Create<LoginResponse>().WithErrors(errors);
 			_authenticationService
-				.Setup(x => x.SignUpAsync(request))
-				.ReturnsAsync(loginErrorResponse);
+				.Setup(x => x.SignUpAsync(request, CancellationToken.None))
+				.ReturnsAsync((
+					IsSuccess: false,
+					Errors: _fixture.Create<string[]>()));
 			_sut = GetController();
 
 			// Act
-			var result = await _sut.SignUp(request) as ObjectResult;
+			var result = await _sut.SignUp(request, CancellationToken.None);
 
 			// Assert
-			result.Should().NotBeNull();
-			result.StatusCode.Should().Be(StatusCodes.Status422UnprocessableEntity);
+			result.Should().BeOfType<UnprocessableEntityObjectResult>();
 		}
 
 		[Test, AutoData]
 		public async Task GivenSignup_WhenRegisterSuccessfully_ThenReturnCreated(RegisterRequest request)
 		{
 			// Arrange
-			var loginSuccessResponse = _fixture.Create<LoginResponse>();
 			_authenticationService
-				.Setup(x => x.SignUpAsync(request))
-				.ReturnsAsync(loginSuccessResponse);
+				.Setup(x => x.SignUpAsync(request, CancellationToken.None))
+				.ReturnsAsync((
+					IsSuccess: true,
+					Errors: Array.Empty<string>()));
 			_sut = GetController();
 
 			// Act
-			var result = await _sut.SignUp(request) as ObjectResult;
+			var result = await _sut.SignUp(request, CancellationToken.None);
 
 			// Assert
-			result.Should().NotBeNull();
-			result.StatusCode.Should().Be(StatusCodes.Status201Created);
-			result.Value.As<LoginResponse>().Errors.Should().BeEmpty();
-			result.Value.As<LoginResponse>().ExpiresAt.Should().NotBeNull();
-			result.Value.As<LoginResponse>().AccessToken.Should().NotBeNull().And.NotBeEmpty();
+			result.As<StatusCodeResult>().StatusCode.Should().Be(StatusCodes.Status201Created);
 		}
 
 		private AuthenticationController GetController() =>

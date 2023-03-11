@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Identity.Extensions
 {
 	[ExcludeFromCodeCoverage]
-	public static class ServicesRegister
+	public static class ServicesRegisterExtensions
 	{
 		public static IServiceCollection AddIdentity(this IServiceCollection services, IConfiguration configuration) =>
 			services

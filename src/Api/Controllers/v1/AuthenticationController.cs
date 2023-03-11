@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.v1
 {
-	[ApiController]
+    [ApiController]
 	[ApiVersion("1.0")]
 	[Route("/api/v1/")]
 	[Produces("application/json")]
@@ -36,20 +36,38 @@ namespace Api.Controllers.v1
 
 		[HttpPost]
 		[Route("signup")]
-		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(LoginResponse))]
+		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ResponseError))]
 		[ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ResponseError))]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ResponseError))]
-		public async Task<IActionResult> SignUp([FromBody] RegisterRequest request)
+		public async Task<IActionResult> SignUp([FromBody] RegisterRequest request, CancellationToken cancellationToken)
 		{
-			var result = await _authenticationService.SignUpAsync(request);
+			var result = await _authenticationService.SignUpAsync(request, cancellationToken);
+
+			if (result.IsSuccess is false)
+			{
+				return UnprocessableEntity(result.Errors);
+			}
+
+			return StatusCode(StatusCodes.Status201Created);
+		}
+
+        [HttpPost]
+        [Route("confirm-email")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ResponseError))]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ResponseError))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ResponseError))]
+        public async Task<IActionResult> ConfirmEmail([FromBody] EmailConfirmationRequest request)
+		{
+			var result = await _authenticationService.ConfirmEmailAsync(request);
 
 			if (result.Errors.Any())
 			{
 				return UnprocessableEntity(result.Errors);
 			}
 
-			return StatusCode(StatusCodes.Status201Created, result);
-		}
+            return StatusCode(StatusCodes.Status201Created, result);
+        }
 	}
 }

@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Identity.Models
 {
 	[ExcludeFromCodeCoverage]
-	public class LoginRequest
+	public record LoginRequest
 	{
 		[Required]
 		public string Username { get; init; }

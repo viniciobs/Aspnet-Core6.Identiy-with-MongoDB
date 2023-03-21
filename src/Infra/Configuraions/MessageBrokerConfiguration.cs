@@ -8,5 +8,7 @@
         public string SaslMechanism { get; init; }
         public string SaslUsername { get; init; }
         public string SaslPassword { get; init; }
+        public int TimeoutMs { get; init; }
+        public int MaxRetries { get; init; }
     }
 }

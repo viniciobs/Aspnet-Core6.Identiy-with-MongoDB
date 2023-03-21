@@ -23,6 +23,8 @@ namespace Infra.Services.Implementations
                 SaslPassword = configuration.SaslPassword,
                 SecurityProtocol = securityProtocol,
                 SaslMechanism = saslMechanism,
+                MessageTimeoutMs = configuration.TimeoutMs,
+                MessageSendMaxRetries = configuration.MaxRetries,
             };
         }
 

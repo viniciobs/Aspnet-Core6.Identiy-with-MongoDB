@@ -109,7 +109,7 @@ namespace Identity.Services.Implementations
 			{
 				return (
 					IsSuccess: false,
-					Errors: new[] { "Unable to send e-mail confirmation. Try again." });
+					Errors: new[] { "Your account has been created but due an internal problem no confirmation email was sent. Contact the system administrator." });
 			}
 
             return (

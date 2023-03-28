@@ -27,7 +27,7 @@ for ($i = 0; $i -lt $TestResults.Length; $i++)
 
     $TestFiles += $TestResults[$i].FullName
 }
-reportgenerator -reports:$TestFiles -targetdir:$OutputDirectory -reporttypes:Html -assemblyfilters:-Ioc.* -classfilters:-Program.cs | Out-Null
+reportgenerator -reports:$TestFiles -targetdir:$OutputDirectory -reporttypes:Html -assemblyfilters:"-Ioc;-Infra" -classfilters:-Program.cs | Out-Null
 
 Write-Host "Opening file results in browser..." -ForegroundColor Green
 Invoke-Expression "$($OutputDirectory)/index.html"

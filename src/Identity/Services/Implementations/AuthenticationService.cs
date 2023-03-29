@@ -26,7 +26,7 @@ namespace Identity.Services.Implementations
 
         public async Task<LoginResponse> ConfirmEmailAsync(EmailConfirmationRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            var user = await _userManager.FindByIdAsync(request.UserId.ToString());
 
             if (user is null)
             {
@@ -100,7 +100,9 @@ namespace Identity.Services.Implementations
 
 			var isConfirmationSent = await _messageProducer.SendMessageAsync(new
 			{
-				Email = user.Email,
+				UserId = user.Id,
+				user.Email,
+				user.UserName,
 				ConfirmationToken = emailConfirmationToken
 			},
 			cancellationToken);

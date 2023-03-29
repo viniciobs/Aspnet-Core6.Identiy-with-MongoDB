@@ -52,15 +52,20 @@ namespace Api.Controllers.v1
 			return StatusCode(StatusCodes.Status201Created);
 		}
 
-        [HttpPost]
+        [HttpGet]
         [Route("confirm-email")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ResponseError))]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ResponseError))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ResponseError))]
-        public async Task<IActionResult> ConfirmEmail([FromBody] EmailConfirmationRequest request)
+        public async Task<IActionResult> ConfirmEmail([FromQuery] Guid userId, string token)
 		{
-			var result = await _authenticationService.ConfirmEmailAsync(request);
+			var result = await _authenticationService.ConfirmEmailAsync(
+				new EmailConfirmationRequest 
+				{ 
+					UserId = userId,
+					Token = token,
+				});
 
 			if (result.Errors.Any())
 			{

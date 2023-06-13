@@ -32,7 +32,6 @@ namespace Ioc.Extensions
 						In = ParameterLocation.Header,
 						Type = SecuritySchemeType.ApiKey,
 						Scheme = "Bearer"
-
 					});
 
 					options.AddSecurityRequirement(new OpenApiSecurityRequirement()

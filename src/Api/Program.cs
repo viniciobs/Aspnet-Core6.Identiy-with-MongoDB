@@ -3,7 +3,10 @@ using Api.Filters;
 using Ioc;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddHealthChecks();
+builder.Services
+	.AddHealthChecks()
+	.AddCustomHealthChecks(builder.Configuration);
+
 builder.Services
 	.AddCors()
 	.AddRouting(options =>

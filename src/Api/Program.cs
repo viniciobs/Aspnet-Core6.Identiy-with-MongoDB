@@ -3,6 +3,9 @@ using Api.Filters;
 using Ioc;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services
+	.AddHealthChecks()
+	.AddCustomHealthChecks(builder.Configuration);
 
 builder.Services
 	.AddCors()
@@ -41,5 +44,6 @@ app
 			.AllowCredentials());
 
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();

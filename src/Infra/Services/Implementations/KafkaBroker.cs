@@ -9,6 +9,8 @@ namespace Infra.Services.Implementations
         private readonly ProducerConfig _configuration;
         private readonly string _topic;
 
+        internal ProducerConfig GetConfig() => _configuration;
+
         public KafkaBroker(MessageBrokerConfiguration configuration)
         {
             _topic = configuration.Topic;

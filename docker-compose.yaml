@@ -6,6 +6,11 @@ volumes:
   authserver-zookeeper-data:
     driver: local
 
+networks:
+  broker-net:
+    driver: bridge
+    name: auth_server_broker_network
+
 services:    
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.2
@@ -17,6 +22,8 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     volumes:
       - authserver-zookeeper-data:/var/lib/zookeeper/data
+    networks:
+      - broker-net
 
   kafka-broker:
     image: confluentinc/cp-kafka:7.3.2
@@ -35,6 +42,8 @@ services:
       KAFKA_MIN_INSYNC_REPLICAS: 1
     volumes:
       - authserver-kafka-data:/var/lib/kafka/data
+    networks:
+      - broker-net
   
   init-kafka:
     image: confluentinc/cp-kafka:7.3.2
@@ -52,6 +61,8 @@ services:
       "
     volumes:
       - authserver-kafka-data:/var/lib/kafka/data
+    networks:
+      - broker-net
   
   auth-api:
     build:
@@ -73,3 +84,5 @@ services:
     volumes:
       - ${APPDATA}\Microsoft\UserSecrets:\root\.microsoft\usersecrets:ro
       - ${USERPROFILE}\.aspnet\https:/https/
+    networks:
+      - broker-net
